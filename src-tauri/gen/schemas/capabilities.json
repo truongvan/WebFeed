@@ -1,1 +1,1 @@
-{}
+{"desktop-capability":{"identifier":"desktop-capability","description":"","context":"local","windows":["main"],"permissions":["dialog:allow-open","store:allow-set","store:allow-get","sql:allow-select","sql:allow-load","sql:allow-execute"],"platforms":["linux","macOS","windows"]}}
