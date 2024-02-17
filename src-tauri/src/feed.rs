@@ -114,8 +114,7 @@ pub async fn download_favicon(
     let image_path = &icons_path.join(format!("{name}.png", name = &name));
 
     std::fs::create_dir_all(icons_path).unwrap();
-    let result = std::fs::write(image_path, content);
-    match result {
+    match std::fs::write(image_path, content) {
         Ok(_) => Ok(image_path
             .to_str()
             .expect("Can not convert to str")
