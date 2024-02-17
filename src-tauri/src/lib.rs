@@ -1,7 +1,9 @@
 mod feed;
 mod show_in_folder;
+mod settings;
 use feed::{download_favicon, get_article, get_feed};
 use show_in_folder::show_in_folder;
+pub use settings::get_settings;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
