@@ -24,7 +24,8 @@
                     } else {
                         menuSizeStore.setSize(0);
                     }
-                }}>
+                }}
+            >
                 <PanelLeft size="16" />
             </Icon>
         </div>
@@ -32,7 +33,8 @@
             <Icon
                 onclick={() => {
                     handleSelectWorkingFolder();
-                }}>
+                }}
+            >
                 <FolderOpen size="16" />
             </Icon>
         </div>
