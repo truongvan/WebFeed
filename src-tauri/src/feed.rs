@@ -5,6 +5,8 @@ use serde::{
     Serialize,
 };
 
+use crate::get_settings;
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Request failed with error code {0}")]
@@ -100,7 +102,7 @@ pub async fn download_favicon(
     url: String,
     name: String,
     size: isize,
-    app_dir_str: String,
+    app_handle: tauri::AppHandle
 ) -> Result<String, ()> {
     let icon_url = format!("https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url={url}&size={size}", url=url, size=size);
     let content = reqwest::get(icon_url)
@@ -109,7 +111,8 @@ pub async fn download_favicon(
         .bytes()
         .await
         .expect("Can not convert.");
-    let app_dir = Path::new(&app_dir_str);
+    let settings = get_settings(app_handle).expect("Setting is not available.");
+    let app_dir = Path::new(&settings.working_folder);
     let icons_path = &app_dir.join("icons");
     let image_path = &icons_path.join(format!("{name}.png", name = &name));
 
