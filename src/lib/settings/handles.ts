@@ -1,7 +1,8 @@
-import { open } from "@tauri-apps/plugin-dialog";
-import { settingsStore } from "$lib/settings/store";
-import { getDB } from "$lib/db";
+import { getChannels } from "$lib/db/channel";
 import { migrate } from "$lib/db/migrations";
+import { settingsStore } from "$lib/settings/store";
+import { channelsStore } from "$lib/stores/channel";
+import { open } from "@tauri-apps/plugin-dialog";
 
 export async function handleSelectWorkingFolder() {
     const file = await open({
@@ -13,7 +14,7 @@ export async function handleSelectWorkingFolder() {
             updater.workingFolder = file
             return updater
         })
-        const db = await getDB()
-        migrate(db)
+        migrate()
+        channelsStore.set(await getChannels());
     }
 };

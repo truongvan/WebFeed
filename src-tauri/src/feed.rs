@@ -1,11 +1,10 @@
 use std::path::Path;
 
+use crate::get_settings;
 use serde::{
     ser::{SerializeMap, Serializer},
     Serialize,
 };
-
-use crate::get_settings;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -102,7 +101,7 @@ pub async fn download_favicon(
     url: String,
     name: String,
     size: isize,
-    app_handle: tauri::AppHandle
+    app_handle: tauri::AppHandle,
 ) -> Result<String, ()> {
     let icon_url = format!("https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url={url}&size={size}", url=url, size=size);
     let content = reqwest::get(icon_url)

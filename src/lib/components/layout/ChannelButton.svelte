@@ -1,14 +1,18 @@
 <script lang="ts">
+    import { deleteChannel } from "$lib/db/channel";
     import { Menu, MenuItem, PredefinedMenuItem } from "@tauri-apps/api/menu";
     import { confirm } from "@tauri-apps/plugin-dialog";
-    import { createEventDispatcher } from "svelte";
+    import { convertFileSrc } from "@tauri-apps/api/core";
+    import { currentChannel } from "$lib/stores/channel";
 
-    const dispatch = createEventDispatcher();
-
-    let active = false;
     export let name: string;
+    export let iconPath: string;
+    export let channelID: number | undefined;
+    export let handleActive: () => void;
+    export let handleDblclick = (e: MouseEvent) => {};
+    export let handleDelete: () => void;
+
     let _menu: Menu | null = null;
-    export let ondblclick = (e: MouseEvent) => {};
 
     async function getMenu() {
         if (_menu) {
@@ -20,9 +24,12 @@
             action: async () => {
                 const confirmation = await confirm("", {
                     title: "This action cannot be reverted. Are you sure?",
-                    type: "warning",
                     okLabel: "Delete",
                 });
+                if (confirmation && channelID) {
+                    deleteChannel(channelID);
+                    handleDelete();
+                }
             },
         });
         const editOption = await MenuItem.new({
@@ -41,19 +48,25 @@
 </script>
 
 <button
-    aria-current={active}
-    on:dblclick={ondblclick}
+    aria-current={$currentChannel && $currentChannel.id === channelID}
+    on:dblclick={handleDblclick}
     on:click={() => {
-        active = true;
-        dispatch("active");
+        handleActive();
     }}
     on:contextmenu|preventDefault={async () => {
-        active = true;
-        dispatch("active");
+        handleActive();
         const menu = await getMenu();
         menu.popup();
-    }}>
-    {name}
+    }}
+>
+    <div class="flex items-center gap-x-1">
+        <div>
+            <img src={convertFileSrc(iconPath)} alt="" />
+        </div>
+        <div>
+            {name}
+        </div>
+    </div>
 </button>
 
 <style lang="postcss">

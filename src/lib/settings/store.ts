@@ -10,7 +10,7 @@ function createWritable() {
     const { subscribe, set, update } = writable<Settings>({
         workingFolder: null,
     });
-    let unsubscribe = () => {};
+    let unsubscribe = () => { };
 
     async function load() {
         let value = await store.get<Settings>(KEY_STORE);

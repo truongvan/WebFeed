@@ -1,16 +1,23 @@
 <script lang="ts">
     import SideNavigation from "$lib/components/layout/SideNavigation.svelte";
-
-    import { FolderOpen, PanelLeft } from "lucide-svelte";
-    import Icon from "elements/Icon.svelte";
-    import { DEFAULT_SIZE, menuSizeStore } from "components/layout/store";
+    import { getChannels } from "$lib/db/channel";
     import { handleSelectWorkingFolder } from "$lib/settings/handles";
-    import "../app.css";
-    import SideBar from "components/layout/SideBar.svelte";
-    import { onMount } from "svelte";
     import { settingsStore } from "$lib/settings/store";
+    import { channelsStore } from "$lib/stores/channel";
+    import SideBar from "components/layout/SideBar.svelte";
+    import { DEFAULT_SIZE, menuSizeStore } from "components/layout/store";
+    import Icon from "elements/Icon.svelte";
+    import { FolderOpen, PanelLeft } from "lucide-svelte";
+    import { onMount } from "svelte";
+    import "../app.css";
+    import { migrate } from "$lib/db/migrations";
+
     onMount(() => {
-        settingsStore.load();
+        setTimeout(async () => {
+            await settingsStore.load();
+            migrate();
+            $channelsStore = await getChannels();
+        }, 500);
     });
 </script>
 

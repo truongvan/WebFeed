@@ -1,6 +1,7 @@
 import type Database from "@tauri-apps/plugin-sql";
+import { getDB } from ".";
 
-const migrations = `CREATE TABLE IF NOT EXISTS channels (
+const migrations = `CREATE TABLE IF NOT EXISTS channel (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     url TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL UNIQUE,
@@ -10,25 +11,18 @@ const migrations = `CREATE TABLE IF NOT EXISTS channels (
     itemCount INTEGER NOT NULL,
     itemUnreadCount INTEGER NOT NULL
 );
-CREATE TABLE IF NOT EXISTS feeds (
+CREATE TABLE IF NOT EXISTS item (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    channel_id INTEGER NOT NULL UNIQUE,
+    channel_id INTEGER NOT NULL,
     title TEXT NOT NULL,
-    link TEXT,
-    description TEXT,
-    FOREIGN KEY(channel_id) REFERENCES channels(id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    feed_id INTEGER NOT NULL,
-    title TEXT,
-    full_content TEXT,
-    link TEXT,
+    full_content TEXT NULL,
+    link TEXT NOT NULL,
     description TEXT NOT NULL,
-    published INTEGER,
-    read INTEGER NOT NULL,
-    hidden INTEGER NOT NULL,
-    FOREIGN KEY(feed_id) REFERENCES feeds(id) ON DELETE CASCADE
+    created_at INTEGER,
+    published_at INTEGER NULL,
+    read_at INTEGER NULL,
+    hidden_at INTEGER NULL,
+    FOREIGN KEY(channel_id) REFERENCES channel(id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS icons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,6 +32,7 @@ CREATE TABLE IF NOT EXISTS icons (
     size INTEGER NOT NULL
 );`
 
-export async function migrate(db: Database) {
+export async function migrate() {
+    const db = await getDB()
     db.execute(migrations)
 }

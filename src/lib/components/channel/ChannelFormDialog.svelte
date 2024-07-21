@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { getDB } from "$lib/db";
-    import { createChannel, type Channel } from "$lib/db/channel";
-    import { extractFromXml } from "@extractus/feed-extractor";
+    import { createChannel, type CreateChannel } from "$lib/db/channel";
+    import { feedChannel } from "$lib/download/item";
+    import { channelsStore } from "$lib/stores/channel";
+    import { extractFromXml, type FeedEntry } from "@extractus/feed-extractor";
     import { createDialog, melt } from "@melt-ui/svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { Plus, X } from "lucide-svelte";
@@ -34,34 +35,38 @@
     });
 
     async function handleSubmit() {
+        let feedEntries: FeedEntry[] | undefined = undefined;
+        let iconPath = "";
         const feed = await invoke<{
             data: string;
             type: string;
             status: number;
             content_type: string;
-        }>("get_feed", { url });
+        }>("get_feed", { url: url });
 
         if (feed.type === "xml") {
             const result = extractFromXml(feed.data);
-            name = name || result.title;
-
-            if (result.entries && name) {
-                const iconPath = await invoke<string>("download_favicon", {
+            if (result) {
+                name = result.title;
+                feedEntries = result.entries;
+                iconPath = await invoke<string>("download_favicon", {
                     url,
                     name,
                     size: 512,
                 });
-                const channel: Channel = {
-                    url,
-                    name,
-                    itemCount: result.entries.length,
-                    itemUnreadCount: result.entries.length,
-                    iconPath,
-                };
-                const db = await getDB();
-                createChannel(db, channel);
             }
         }
+
+        const channel: CreateChannel = {
+            url,
+            name: name || "No name",
+            itemCount: 0,
+            itemUnreadCount: 0,
+            iconPath,
+        };
+        const c = await createChannel(channel);
+        channelsStore.update((channels) => [...channels, c]);
+        feedChannel(c, feedEntries);
     }
 </script>
 
@@ -107,7 +112,7 @@
                 </label>
                 <input
                     bind:value={name}
-                    placeholder="MDN Blog"
+                    placeholder="e.x. MDN Blog"
                     class="inline-flex h-8 w-full flex-1 items-center justify-center rounded-sm border border-solid px-3 leading-none text-black"
                     id="name"
                 />

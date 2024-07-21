@@ -1,7 +1,7 @@
 import type Database from "@tauri-apps/plugin-sql";
+import { getDB } from ".";
 
-export interface Channel {
-    id?: number;             // INTEGER PRIMARY KEY AUTOINCREMENT
+export interface CreateChannel {
     url: string;            // TEXT NOT NULL UNIQUE
     name: string;           // TEXT NOT NULL UNIQUE
     created_at?: number;    // INTEGER (optional, as it's not marked NOT NULL)
@@ -11,15 +11,27 @@ export interface Channel {
     itemUnreadCount: number;// INTEGER NOT NULL
 }
 
+export interface Channel extends CreateChannel {
+    id: number;             // INTEGER PRIMARY KEY AUTOINCREMENT
+}
 
-export async function getChannels(db: Database) {
+
+export async function getChannels() {
+    const db = await getDB()
     const result = await db.select<Channel[]>(`SELECT id,url,name,created_at,updated_at,iconPath,itemCount,itemUnreadCount
-    FROM channels;
+    FROM channel;
     `)
     return result
 }
 
-export async function createChannel(db: Database, channel: Channel) {
+export async function deleteChannel(channelID: number) {
+    const db = await getDB()
+    const result = await db.execute(`DELETE FROM channel WHERE id = $1`, [channelID])
+    return result
+}
+
+export async function createChannel(channel: CreateChannel) {
+    const db = await getDB()
     const fields = ["url", "name", "created_at", "updated_at", "iconPath", "itemCount", "itemUnreadCount"]
     if (channel.created_at === undefined) {
         channel.created_at = Date.now()
@@ -27,11 +39,11 @@ export async function createChannel(db: Database, channel: Channel) {
     if (channel.updated_at === undefined) {
         channel.updated_at = Date.now()
     }
-    const result = await db.select<Channel>(`INSERT INTO channels (${fields.join(",")})
+    const result = await db.select<Channel[]>(`INSERT INTO channel (${fields.join(",")})
     VALUES (${Array.from(fields, () => "?").join(",")})
-    RETURNING ${fields.join(",")}
+    RETURNING ${["id", ...fields].join(",")}
     ;`, [
         channel.url, channel.name, channel.created_at, channel.updated_at, channel.iconPath, channel.itemCount, channel.itemUnreadCount
     ])
-    return result
+    return result[0]
 }
